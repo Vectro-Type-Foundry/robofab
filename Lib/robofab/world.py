@@ -26,7 +26,7 @@ class RFWorld:
 			# if you know more about PC & win stuff, add it here!
 			self.pc = True
 		else:
-			raise RoboFabError, "We're running on an unknown platform."
+			raise RoboFabError("We're running on an unknown platform. (%s)" % self.name)
 
 		# collect versions
 		self.pyVersion = sys.version[:3]
@@ -85,7 +85,6 @@ class RFWorld:
 		]
 		return ", ".join(s)
 
-
 world = RFWorld()
 
 lineBreak = os.linesep
@@ -101,8 +100,6 @@ elif world.inGlyphs:
 elif world.inPython:
 	from robofab.objects.objectsRF import CurrentFont, CurrentGlyph, RFont, RGlyph, OpenFont, NewFont, AllFonts
 
-    
-
 if __name__ == "__main__":
 	f = RFWorld()
-	print f
+	print(f)

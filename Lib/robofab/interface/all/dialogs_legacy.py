@@ -9,6 +9,7 @@ Mac and FontLab implementation written by the RoboFab development team.
 PC implementation by Eigi Eigendorf and is (C)2002 Eigi Eigendorf.
 
 """
+from __future__ import print_function
 
 import os
 import sys
@@ -700,19 +701,19 @@ def PutFile(message=None, fileName=None):
 if __name__=='__main__':
 	import traceback
 	
-	print "dialogs hasW", hasW
-	print "dialogs hasDialogKit", hasDialogKit
-	print "dialogs MAC", MAC
-	print "dialogs PC", PC
-	print "dialogs inFontLab", inFontLab
-	print "dialogs hasEasyDialogs", hasEasyDialogs
+	print("dialogs hasW", hasW)
+	print("dialogs hasDialogKit", hasDialogKit)
+	print("dialogs MAC", MAC)
+	print("dialogs PC", PC)
+	print("dialogs inFontLab", inFontLab)
+	print("dialogs hasEasyDialogs", hasEasyDialogs)
 	
 	def tryDialog(dialogClass, args=None):
-		print
-		print "tryDialog:", dialogClass, "with args:", args
+		print()
+		print("tryDialog:", dialogClass, "with args:", args)
 		try:
 			if args is not None:
-				apply(dialogClass, args)
+				dialogClass(*args)
 			else:
 				apply(dialogClass)
 		except:

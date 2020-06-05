@@ -32,7 +32,11 @@ fontinfo.plist values between the possible format versions.
 
 import os
 import shutil
-from cStringIO import StringIO
+try:
+	from cStringIO import StringIO
+except:
+	from io import StringIO
+	unicode = str
 import calendar
 from robofab.plistlib import readPlist, writePlist
 from robofab.glifLib import GlyphSet, READ_MODE, WRITE_MODE

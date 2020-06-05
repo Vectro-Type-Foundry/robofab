@@ -1,5 +1,9 @@
 import unittest
-from cStringIO import StringIO
+try:
+	from cStringIO import StringIO
+except:
+	from io import StringIO
+
 import sys
 from robofab import ufoLib
 from robofab.objects.objectsRF import RInfo

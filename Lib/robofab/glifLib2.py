@@ -17,7 +17,11 @@ __all__ = ["GlyphSet", "GlifLibError",
 import os
 from robofab.xmlTreeBuilder import buildTree, stripCharacterData
 from robofab.pens.pointPen import AbstractPointPen
-from cStringIO import StringIO
+try:
+	from cStringIO import StringIO
+except:
+	from io import StringIO
+
 
 
 class GlifLibError(Exception): pass

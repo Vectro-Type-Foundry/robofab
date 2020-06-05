@@ -23,7 +23,11 @@ If that file does not exist, it will make it.
 
 from robofab import RoboFabError
 from robofab.plistlib import Plist
-from cStringIO import StringIO
+try:
+	from cStringIO import StringIO
+except:
+	from io import StringIO
+
 import os
 
 class _PrefObject:

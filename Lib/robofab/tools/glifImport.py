@@ -50,7 +50,11 @@ def importAllGlifFiles(font, dirName=None, doProgress=True, bar=None):
 			if hasattr(glyph, "note"):
 				flGlyph.note = glyph.note  # XXX must encode
 			if hasattr(glyph, "lib"):
-				from cStringIO import StringIO
+				try:
+					from cStringIO import StringIO
+				except:
+					from io import StringIO
+				
 				from robofab.plistlib import writePlist
 				lib = glyph.lib
 				if lib:

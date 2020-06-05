@@ -9,6 +9,8 @@ The main class in this module is GlyphSet. It manages a set of .glif files
 in a folder. It offers two ways to read glyph data, and one way to write
 glyph data. See the class doc string for details.
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 __all__ = ["GlyphSet", "GlifLibError",
 		"readGlyphFromString", "writeGlyphToString",
@@ -17,7 +19,11 @@ __all__ = ["GlyphSet", "GlifLibError",
 import os
 from robofab.xmlTreeBuilder import buildTree, stripCharacterData
 from robofab.pens.pointPen import AbstractPointPen
-from cStringIO import StringIO
+try:
+	from cStringIO import StringIO
+except:
+	from io import StringIO
+
 
 
 class GlifLibError(Exception): pass
@@ -152,7 +158,7 @@ class GlyphSet:
 		"""Write the contents.plist file out to disk. Call this method when
 		you're done writing glyphs.
 		"""
-		from plistlib import writePlistToString
+		from .plistlib import writePlistToString
 		contentsPath = os.path.join(self.dirName, "contents.plist")
 		# We need to force Unix line endings, even in OS9 MacPython in FL,
 		# so we do the writing to file ourselves.
@@ -255,7 +261,7 @@ class GlyphSet:
 
 	def __getitem__(self, glyphName):
 		if glyphName not in self.contents:
-			raise KeyError, glyphName
+			raise KeyError(glyphName)
 		return self.glyphClass(glyphName, self)
 
 	# quickly fetching unicode values
@@ -286,7 +292,7 @@ class GlyphSet:
 				glyphPath = os.path.join(self.dirName, n)
 				contents[_fetchGlyphName(glyphPath)] = n
 		else:
-			from plistlib import readPlist
+			from .plistlib import readPlist
 			contents = readPlist(contentsPath)
 		return contents
 
@@ -294,7 +300,7 @@ class GlyphSet:
 		fileName = self.contents[glyphName]
 		path = os.path.join(self.dirName, fileName)
 		if not os.path.exists(path):
-			raise KeyError, glyphName
+			raise KeyError(glyphName)
 		return _glifTreeFromFile(path)
 
 
@@ -361,7 +367,7 @@ def writeGlyphToString(glyphName, glyphObject=None, drawPointsFunc=None, writer=
 	width = getattr(glyphObject, "width", None)
 	if width is not None:
 		if not isinstance(width, (int, float)):
-			raise GlifLibError, "width attribute must be int or float"
+			raise GlifLibError("width attribute must be int or float")
 		writer.simpletag("advance", width=repr(width))
 		writer.newline()
 
@@ -371,7 +377,7 @@ def writeGlyphToString(glyphName, glyphObject=None, drawPointsFunc=None, writer=
 			unicodes = [unicodes]
 		for code in unicodes:
 			if not isinstance(code, int):
-				raise GlifLibError, "unicode values must be int"
+				raise GlifLibError("unicode values must be int")
 			hexCode = hex(code)[2:].upper()
 			if len(hexCode) < 4:
 				hexCode = "0" * (4 - len(hexCode)) + hexCode
@@ -381,7 +387,7 @@ def writeGlyphToString(glyphName, glyphObject=None, drawPointsFunc=None, writer=
 	note = getattr(glyphObject, "note", None)
 	if note is not None:
 		if not isinstance(note, (str, unicode)):
-			raise GlifLibError, "note attribute must be str or unicode"
+			raise GlifLibError("note attribute must be str or unicode")
 		note = note.encode('utf-8')
 		writer.begintag("note")
 		writer.newline()
@@ -439,7 +445,7 @@ def _glifTreeFromFile(aFile):
 		_stripGlyphXMLTree(tree[2])
 		return tree
 	except:
-		print "Problem with glif file", aFile
+		print("Problem with glif file", aFile)
 		raise
 	return None
 
@@ -469,7 +475,7 @@ def _readGlyphFromTree(tree, glyphObject=None, pointPen=None):
 	assert tree[0] == "glyph"
 	formatVersion = int(tree[1].get("format", "0"))
 	if formatVersion not in (0, 1):
-		raise GlifLibError, "unsupported glif format version: %s" % formatVersion
+		raise GlifLibError("unsupported glif format version: %s" % formatVersion)
 	glyphName = tree[1].get("name")
 	if glyphName and glyphObject is not None:
 		_relaxedSetattr(glyphObject, "name", glyphName)
@@ -494,7 +500,7 @@ def _readGlyphFromTree(tree, glyphObject=None, pointPen=None):
 			note = "\n".join(lines)
 			_relaxedSetattr(glyphObject, "note", note)
 		elif element == "lib":
-			from plistFromTree import readPlistFromTree
+			from .plistFromTree import readPlistFromTree
 			assert len(children) == 1
 			lib = readPlistFromTree(children[0])
 			_relaxedSetattr(glyphObject, "lib", lib)
@@ -522,10 +528,10 @@ def _fetchGlyphName(glyphPath):
 	f = open(glyphPath)
 	try:
 		p.ParseFile(f)
-	except _DoneParsing, why:
+	except _DoneParsing as why:
 		glyphName = why.args[0]
 		if glyphName is None:
-			raise ValueError, (".glif file doen't have a <glyph> top-level "
+			raise ValueError(".glif file doen't have a <glyph> top-level "
 					"element: %r" % glyphPath)
 	else:
 		assert 0, "it's not expected that parsing the file ends normally"
@@ -665,7 +671,7 @@ class GLIFPointPen(AbstractPointPen):
 		if pt is not None:
 			for coord in pt:
 				if not isinstance(coord, (int, float)):
-					raise GlifLibError, "coordinates must be int or float"
+					raise GlifLibError("coordinates must be int or float")
 			attrs.append(("x", repr(pt[0])))
 			attrs.append(("y", repr(pt[1])))
 		if segmentType is not None:
@@ -681,7 +687,7 @@ class GLIFPointPen(AbstractPointPen):
 		attrs = [("base", glyphName)]
 		for (attr, default), value in zip(_transformationInfo, transformation):
 			if not isinstance(value, (int, float)):
-				raise GlifLibError, "transformation values must be int or float"
+				raise GlifLibError("transformation values must be int or float")
 			if value != default:
 				attrs.append((attr, repr(value)))
 		self.writer.simpletag("component", attrs)
@@ -711,7 +717,7 @@ if __name__ == "__main__":
 		pprint(g2.__dict__)
 	else:
 		s = writeGlyphToString("a", glyph, drawPoints)
-		print s
+		print(s)
 		g2 = TestGlyph()
 		readGlyphFromString(s, g2, PrintingPointPen())
 		pprint(g2.__dict__)

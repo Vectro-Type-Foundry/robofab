@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 
 __DEBUG__ = True
@@ -299,21 +300,21 @@ def CurrentFont():
         _font = fontforge.activeFontInUI()
         return RFont(_font)
     if __DEBUG__:
-        print "CurrentFont(): fontforge not running with user interface,"
+        print("CurrentFont(): fontforge not running with user interface,")
     return None
     
 def OpenFont(fontPath):
     obj = fontforge.open(fontPath)
     if __DEBUG__:
-        print "OpenFont", fontPath
-        print "result:", obj
+        print("OpenFont", fontPath)
+        print("result:", obj)
     return RFont(obj)
     
 def NewFont(fontPath=None):
     _font = fontforge.font()
     if __DEBUG__:
-        print "NewFont", fontPath
-        print "result:", _font
+        print("NewFont", fontPath)
+        print("result:", _font)
     return RFont(_font)
     
     
@@ -372,7 +373,7 @@ class RFont(BaseFont):
         if os.path.splitext(_path)[-1] != ".sfd":
             _path = os.path.splitext(_path)[0]+".sfd"
         if __DEBUG__:
-            print "RFont.save() to", _path
+            print("RFont.save() to", _path)
         self._object.save(_path)
 
     def naked(self):
@@ -380,7 +381,7 @@ class RFont(BaseFont):
     
     def close(self):
         if __DEBUG__:
-            print "RFont.close()"
+            print("RFont.close()")
         self._object.close()
         
 
@@ -389,10 +390,10 @@ class RFont(BaseFont):
     #   generate
     
     def dummyGeneratePreHook(self, *args):
-        print "dummyGeneratePreHook", args
+        print("dummyGeneratePreHook", args)
     
     def dummyGeneratePostHook(self, *args):
-        print "dummyGeneratePostHook", args
+        print("dummyGeneratePostHook", args)
 
     def generate(self, outputType, path=None):
         """
@@ -424,7 +425,7 @@ class RFont(BaseFont):
         }
 
         if __DEBUG__:
-            print "font.generate", outputType, path
+            print("font.generate", outputType, path)
         
         # set pre and post hooks (necessary?)
         temp = getattr(self._object, "temporary")
@@ -445,7 +446,7 @@ class RFont(BaseFont):
                 fileName = "%s.%s"%(fileName, extension)
             else:
                 if __DEBUG__:
-                    print "can't generate font in %s format"%outputType
+                    print("can't generate font in %s format"%outputType)
                     return
             path = os.path.join(dirName, fileName)
         
@@ -455,7 +456,7 @@ class RFont(BaseFont):
         # generate
         self._object.generate(filename=path, flags=generateFlags)
         if __DEBUG__:
-            print "font.generate():", path
+            print("font.generate():", path)
         return path
 
 
@@ -486,7 +487,7 @@ class RFont(BaseFont):
         try:
             ffGlyph = self._object[glyphName]
         except TypeError:
-            print "font.getGlyph, can't find glyphName, returning new glyph"
+            print("font.getGlyph, can't find glyphName, returning new glyph")
             return self.newGlyph(glyphName)
         glyph = RGlyph(ffGlyph)
         glyph.setParent(self)
@@ -510,7 +511,7 @@ class RFont(BaseFont):
             slot = self._object.findEncodingSlot(glyphName)
             if slot == -1:
                 # not encoded
-                print "font.newGlyph: unencoded slot", slot, glyphName
+                print("font.newGlyph: unencoded slot", slot, glyphName)
                 glyph = self._object.createChar(-1, glyphName)
             else:
                 glyph = self._object.createMappedChar(glyphName)
@@ -678,19 +679,19 @@ class RGlyph(BaseGlyph):
 
     def __mul__(self, factor):
         if __DEBUG__:
-            print "glyphmath mul", factor
+            print("glyphmath mul", factor)
         return self.copy() *factor
 
     __rmul__ = __mul__
 
     def __sub__(self, other):
         if __DEBUG__:
-            print "glyphmath sub", other, other.__class__
+            print("glyphmath sub", other, other.__class__)
         return self.copy() - other.copy()
 
     def __add__(self, other):
         if __DEBUG__:
-            print "glyphmath add", other, other.__class__
+            print("glyphmath add", other, other.__class__)
         return self.copy() + other.copy()
 
     def getParent(self):
@@ -734,11 +735,13 @@ class RGlyph(BaseGlyph):
     #
     #   transformations
     
-    def move(self, (x, y)):
+    def move(self, pt):
+        (x, y) = pt
         matrix = psMat.translate((x,y))
         self._object.transform(matrix)
         
-    def scale(self, (x, y), center=(0,0)):
+    def scale(self, pt, center=(0,0)):
+        (x, y) = pt
         matrix = psMat.scale(x,y)
         self._object.transform(matrix)
         
@@ -766,7 +769,7 @@ class RGlyph(BaseGlyph):
 
     def autoUnicodes(self):
         if __DEBUG__:
-            print "objectsFF.RGlyph.autoUnicodes() not implemented yet."
+            print("objectsFF.RGlyph.autoUnicodes() not implemented yet.")
         
     # -----------------------------------------------------------------
     #
@@ -855,7 +858,7 @@ class RPoint(BasePoint):
         contourParent = self.getParent()
         if contourParent is not None:
             try:
-                contourIndex = `contourParent.index`
+                contourIndex = repr(contourParent.index)
             except AttributeError: pass
             glyphParent = contourParent.getParent()
             if glyphParent is not None:
@@ -949,28 +952,28 @@ if __name__ == "__main__":
             printFont=False, printGlyph=False,
             printLayer=False, printContour=False, printPoint=False):
         def printAPI(item, name):
-            print 
-            print "-"*80
-            print "API of", item
+            print() 
+            print("-"*80)
+            print("API of", item)
             names = dir(item)
             names.sort()
-            print
+            print()
 
             if printAPI:
                 for n in names:
-                    print
-                    print "%s.%s"%(name, n)
+                    print()
+                    print("%s.%s"%(name, n))
                     try:
-                        print getattr(item, n).__doc__
+                        print(getattr(item, n).__doc__)
                     except:
-                        print "# error showing", n
+                        print("# error showing", n)
         # module
         if printModule:
-            print "module file:", fontforge.__file__
-            print "version:", fontforge.version()
-            print "module doc:", fontforge.__doc__
-            print "has User Interface:", fontforge.hasUserInterface()
-            print "has Spiro:", fontforge.hasSpiro()
+            print("module file:", fontforge.__file__)
+            print("version:", fontforge.version())
+            print("module doc:", fontforge.__doc__)
+            print("has User Interface:", fontforge.hasUserInterface())
+            print("has Spiro:", fontforge.hasSpiro())
             printAPI(fontforge, "fontforge")
         
         # font
@@ -1021,10 +1024,10 @@ if __name__ == "__main__":
             a = getattr(obj1, attrName)
             b = getattr(obj2, attrName)
         if a == b and a is not None and b is not None:
-            print "\tattr %s ok"%attrName, a
+            print("\tattr %s ok"%attrName, a)
             return True
         else:
-            print "\t?\t%s error:"%attrName, "%s:"%obj1.__class__, a, "%s:"%obj2.__class__, b
+            print("\t?\t%s error:"%attrName, "%s:"%obj1.__class__, a, "%s:"%obj2.__class__, b)
             return False
 
     f = OpenFont(UFOPath)
@@ -1032,20 +1035,20 @@ if __name__ == "__main__":
     ref = _RFont(UFOPath)
     
     if False:
-        print
-        print "test font attributes"
+        print()
+        print("test font attributes")
         compareAttr(f, ref, "path")
     
         a = Set(f.keys())
         b = Set(ref.keys())
-        print "glyphs in ref, not in f", b.difference(a)
-        print "glyphs in f, not in ref", a.difference(b)
+        print("glyphs in ref, not in f", b.difference(a))
+        print("glyphs in f, not in ref", a.difference(b))
     
-        print "A" in f, "A" in ref
-        print f.has_key("A"),  ref.has_key("A")
+        print("A" in f, "A" in ref)
+        print("A" in f,  "A" in ref)
     
-        print
-        print "test font info attributes"
+        print()
+        print("test font info attributes")
         compareAttr(f.info, ref.info, "ascender")
         compareAttr(f.info, ref.info, "descender")
         compareAttr(f.info, ref.info, "unitsPerEm")
@@ -1076,14 +1079,14 @@ if __name__ == "__main__":
     if False:
         # new glyphs
         # unencoded
-        print "new glyph: unencoded", f.newGlyph("test_unencoded_glyph")
+        print("new glyph: unencoded", f.newGlyph("test_unencoded_glyph"))
         # encoded
-        print "new glyph: encoded", f.newGlyph("Adieresis")
+        print("new glyph: encoded", f.newGlyph("Adieresis"))
         # existing
-        print "new glyph: existing", f.newGlyph("K")
+        print("new glyph: existing", f.newGlyph("K"))
 
-        print
-        print "test glyph attributes"
+        print()
+        print("test glyph attributes")
         compareAttr(f['A'], ref['A'], "width")
         compareAttr(f['A'], ref['A'], "unicode")
         compareAttr(f['A'], ref['A'], "name")
@@ -1092,8 +1095,8 @@ if __name__ == "__main__":
         compareAttr(f['A'], ref['A'], "rightMargin")
     
     if False:
-        print
-        print "comparing glyph digests"
+        print()
+        print("comparing glyph digests")
         failed = []
         for n in f.keys():
             g1 = f[n]
@@ -1106,16 +1109,16 @@ if __name__ == "__main__":
                 failed.append(n)
                 #print "f: ", d1
                 #print "ref: ", d2
-        print "digest failed for %s"%". ".join(failed)
+        print("digest failed for %s"%". ".join(failed))
             
         g3 = f['A'] *.333
-        print g3
-        print g3._getDigest()
+        print(g3)
+        print(g3._getDigest())
         f.save()
 
     if False:
-        print
-        print "test contour attributes"
+        print()
+        print("test contour attributes")
         compareAttr(f['A'].contours[0], ref['A'].contours[0], "index")
     
         #for c in f['A'].contours:
@@ -1128,13 +1131,13 @@ if __name__ == "__main__":
     
         ptf = f['C'].contours[0].points[0]
         ptref = ref['C'].contours[0].points[0]
-        print "x, y", (ptf.x, ptf.y) == (ptref.x, ptref.y), (ptref.x, ptref.y)
-        print 'type', ptf.type, ptref.type
+        print("x, y", (ptf.x, ptf.y) == (ptref.x, ptref.y), (ptref.x, ptref.y))
+        print('type', ptf.type, ptref.type)
     
-        print "point inside", f['A'].pointInside((50,10)),  ref['A'].pointInside((50,10))
+        print("point inside", f['A'].pointInside((50,10)),  ref['A'].pointInside((50,10)))
     
     
-    print ref.kerning.keys()
+    print(ref.kerning.keys())
     
     class GlyphLookupWrapper(dict):
         """A wrapper for the lookups / subtable data in a FF glyph.
@@ -1151,7 +1154,7 @@ if __name__ == "__main__":
             """Pick some of the values apart."""
             lookups = self._object.getPosSub('*')
             for t in lookups:
-                print 'lookup', t
+                print('lookup', t)
                 lookupName = t[0]
                 lookupType = t[1]
                 if not lookupName in self:
@@ -1164,7 +1167,7 @@ if __name__ == "__main__":
             left = self._object.glyphname
             for name in self.keys():
                 for item in self[name]:
-                    print 'item', item
+                    print('item', item)
                     if item[0]!="Pair":
                         continue
                     #print 'next glyph:', item[1]
@@ -1194,7 +1197,7 @@ if __name__ == "__main__":
     # lets try to find the kerning
     A = f['A'].naked()
     positionTypes = [ "Position", "Pair", "Substitution", "AltSubs", "MultSubs","Ligature"]
-    print A.getPosSub('*')
+    print(A.getPosSub('*'))
     #for t in A.getPosSub('*'):
     #    print 'lookup subtable name:', t[0]
     #    print 'positioning type:', t[1]
@@ -1211,35 +1214,35 @@ if __name__ == "__main__":
     #        print 'second glyph v Adv:', t[10]
     
     gw = GlyphLookupWrapper(A)
-    print gw
-    print gw.keys()
-    print gw.getKerning()
+    print(gw)
+    print(gw.keys())
+    print(gw.getKerning())
     
     name = "'kern' Horizontal Kerning in Latin lookup 0 subtable"
     item = (name, 'quoteright', 0, 0, -200, 0, 0, 0, 0, 0)
     
     A.removePosSub(name)
-    apply(A.addPosSub, item)
+    A.addPosSub(*item)
     
     
-    print "after", A.getPosSub('*')
+    print("after", A.getPosSub('*'))
     
     fn = f.naked()
 
     name = "'kern' Horizontal Kerning in Latin lookup 0"
 
 
-    print "before removing stuff", fn.gpos_lookups
-    print "removing stuff", fn.removeLookup(name)
-    print "after removing stuff", fn.gpos_lookups
+    print("before removing stuff", fn.gpos_lookups)
+    print("removing stuff", fn.removeLookup(name))
+    print("after removing stuff", fn.gpos_lookups)
 
     flags = ()
     feature_script_lang = (("kern",(("latn",("dflt")),)),)
-    print fn.addLookup('kern', 'gpos_pair', flags, feature_script_lang)
-    print fn.addLookupSubtable('kern', 'myKerning')
+    print(fn.addLookup('kern', 'gpos_pair', flags, feature_script_lang))
+    print(fn.addLookupSubtable('kern', 'myKerning'))
     
     
-    print fn.gpos_lookups
+    print(fn.gpos_lookups)
     A.addPosSub('myKerning', 'A', 0, 0, -400, 0, 0, 0, 0, 0)
     A.addPosSub('myKerning', 'B', 0, 0, 200, 0, 0, 0, 0, 0)
     A.addPosSub('myKerning', 'C', 0, 0, 10, 0, 0, 0, 0, 0)
@@ -1247,7 +1250,7 @@ if __name__ == "__main__":
     
     
     gw = GlyphLookupWrapper(A)
-    print gw
-    print gw.keys()
-    print gw.getKerning()
+    print(gw)
+    print(gw.keys())
+    print(gw.getKerning())
     

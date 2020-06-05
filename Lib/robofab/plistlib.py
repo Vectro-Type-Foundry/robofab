@@ -59,7 +59,10 @@ __all__ = [
 # Note: the Plist and Dict classes have been deprecated.
 
 import binascii
-from cStringIO import StringIO
+try:
+	from cStringIO import StringIO
+except:
+	from io import StringIO
 import re
 try:
     from datetime import datetime
@@ -301,7 +304,7 @@ class _InternalDict(dict):
         try:
             value = self[attr]
         except KeyError:
-            raise AttributeError, attr
+            raise AttributeError(attr)
         from warnings import warn
         warn("Attribute access from plist dicts is deprecated, use d[key] "
              "notation instead", PendingDeprecationWarning)
@@ -317,7 +320,7 @@ class _InternalDict(dict):
         try:
             del self[attr]
         except KeyError:
-            raise AttributeError, attr
+            raise AttributeError(attr)
         from warnings import warn
         warn("Attribute access from plist dicts is deprecated, use d[key] "
              "notation instead", PendingDeprecationWarning)
@@ -476,20 +479,3 @@ class PlistParser:
     def end_date(self):
         self.addObject(_dateFromString(self.getData()))
 
-
-# cruft to support booleans in Python <= 2.3
-import sys
-if sys.version_info[:2] < (2, 3):
-    # Python 2.2 and earlier: no booleans
-    # Python 2.2.x: booleans are ints
-    class bool(int):
-        """Imitation of the Python 2.3 bool object."""
-        def __new__(cls, value):
-            return int.__new__(cls, not not value)
-        def __repr__(self):
-            if self:
-                return "True"
-            else:
-                return "False"
-    True = bool(1)
-    False = bool(0)

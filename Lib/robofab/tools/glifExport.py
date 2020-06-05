@@ -18,7 +18,10 @@ def exportGlyph(glyphName, flGlyph, glyphSet):
 		glyph.note = flGlyph.note
 	customdata = flGlyph.customdata
 	if customdata:
-		from cStringIO import StringIO
+		try:
+			from cStringIO import StringIO
+		except:
+			from io import StringIO
 		from robofab.plistlib import readPlist, Data
 		f = StringIO(customdata)
 		try:

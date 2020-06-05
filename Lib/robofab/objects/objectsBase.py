@@ -17,6 +17,7 @@ do it with the objectsFL and objectsRF.
 
 from __future__ import generators
 from __future__ import division
+from __future__ import print_function
 
 from warnings import warn
 import math
@@ -125,7 +126,7 @@ class BasePostScriptHintValues(object):
 			try:
 				value = getattr(self, name)
 			except AttributeError:
-				print "%s attribute not supported"%name
+				print("%s attribute not supported"%name)
 				continue
 			if value:
 				d[name] = getattr(self, name)
@@ -481,8 +482,10 @@ def _interpolate(a,b,v):
 	"""interpolate values by factor v"""
 	return a + (b-a) * v
 
-def _interpolatePt((xa, ya),(xb, yb),v):
+def _interpolatePt(pt1, pt2,v):
 	"""interpolate point by factor v"""
+	(xa, ya) = pt1
+	(xb, yb) = pt2
 	if not isinstance(v, tuple):
 		xv = v
 		yv = v
@@ -490,8 +493,11 @@ def _interpolatePt((xa, ya),(xb, yb),v):
 		xv, yv = v
 	return xa + (xb-xa) * xv, ya + (yb-ya) * yv
 
-def _scalePointFromCenter((pointX, pointY), (scaleX, scaleY), (centerX, centerY)):
+def _scalePointFromCenter(pt1, pt2, center):
 	"""scale a point from a center point"""
+	(pointX, pointY) = pt1
+	(scaleX, scaleY) = pt2
+	(centerX, centerY) = center
 	ogCenter = (centerX, centerY)
 	scaledCenter = (centerX * scaleX, centerY * scaleY)
 	shiftVal = (scaledCenter[0] - ogCenter[0], scaledCenter[1] - ogCenter[1])
@@ -510,8 +516,9 @@ def _box(objectToMeasure, fontObject=None):
 		bounds = (0, 0, 0, 0)
 	return bounds
 
-def roundPt((x, y)):
+def roundPt(pt):
 	"""Round a vector"""
+	(x, y) = pt
 	return int(round(x)), int(round(y))
 
 def addPt(ptA, ptB):
@@ -577,7 +584,7 @@ class RBaseObject(object):
 	
 	def __repr__(self):
 		try:
-			name = `self._object`
+			name = repr(self._object)
 		except:
 			name = "None"
 		return "<%s for %s>" %(self._title, name)
@@ -665,13 +672,13 @@ class BaseFont(RBaseObject):
 			return False
 		if self.fileName is not None and self.fileName == other.fileName:
 			return True
-		if self.fileName <> other.fileName:
+		if self.fileName != other.fileName:
 			return False
 		# this will falsely identify two distinct "Untitled" as equal
 		# so test some more. A lot of work to please some dolt who
 		# does not save his fonts while running scripts.
 		try:
-			if len(self) <> len(other):
+			if len(self) != len(other):
 				return False
 		except TypeError:
 			return False
@@ -681,7 +688,7 @@ class BaseFont(RBaseObject):
 		namesSelf.sort()
 		namesOther.sort()
 		for i in range(len(namesSelf)):
-			if namesSelf[i] <> namesOther[i]:
+			if namesSelf[i] != namesOther[i]:
 				return False
 		for c in self:
 			if not c == other[c.name]:
@@ -700,7 +707,7 @@ class BaseFont(RBaseObject):
 		return self.getGlyph(glyphName)
 
 	def __contains__(self, glyphName):
-		return self.has_key(glyphName)
+		return glyphName in self
 
 	def _hasChanged(self):
 		#mark the object as changed
@@ -733,7 +740,7 @@ class BaseFont(RBaseObject):
 		map = {}
 		for glyph in self:
 			for u in glyph.unicodes:
-				if not map.has_key(u):
+				if u not in map:
 					map[u] = []
 				map[u].append(glyph.name)
 		return map
@@ -753,7 +760,7 @@ class BaseFont(RBaseObject):
 			glyphName = glyph.name
 			for component in glyph.components:
 				baseGlyphName = component.baseGlyph
-				if not map.has_key(baseGlyphName):
+				if baseGlyphName not in map:
 					map[baseGlyphName] = []
 				map[baseGlyphName].append(glyphName)
 		return map
@@ -791,7 +798,7 @@ class BaseFont(RBaseObject):
 						anchors[accentAnchor.name] = shift[0]+accentAnchor.position[0], shift[1]+accentAnchor.position[1]
 		if printErrors:
 			for px in errors.keys():
-				print px
+				print(px)
 		return destGlyph
 	
 	def generateGlyph(self, glyphName, replace=1, preflight=False, printErrors=True):
@@ -800,7 +807,7 @@ class BaseFont(RBaseObject):
 		con = readGlyphConstructions()
 		entry = con.get(glyphName, None)
 		if not entry:
-			print "glyph '%s' is not listed in the robofab/Data/GlyphConstruction.txt"%(glyphName)
+			print("glyph '%s' is not listed in the robofab/Data/GlyphConstruction.txt"%(glyphName))
 			return
 		baseName = con[glyphName][0]
 		parts = con[glyphName][1:]
@@ -830,12 +837,12 @@ class BaseFont(RBaseObject):
 			fatalError = False
 			if glyphName not in minGlyphNames:
 				fatalError = True
-				if not errors.has_key('Missing Glyphs'):
+				if 'Missing Glyphs' not in errors:
 					errors['Missing Glyphs'] = []
 				errors['Missing Glyphs'].append('Interpolation Error: %s not in %s'%(glyphName, minFont.info.postscriptFullName))
 			if glyphName not in maxGlyphNames:
 				fatalError = True
-				if not errors.has_key('Missing Glyphs'):
+				if 'Missing Glyphs' not in errors:
 					errors['Missing Glyphs'] = []
 				errors['Missing Glyphs'].append('Interpolation Error: %s not in %s'%(glyphName, maxFont.info.postscriptFullName))
 			# if no major problems, proceed.
@@ -846,7 +853,7 @@ class BaseFont(RBaseObject):
 				oldLib = {}
 				oldMark = None
 				oldNote = None
-				if self.has_key(glyphName):
+				if glyphName in self:
 					glyph = self[glyphName]
 					oldLib = dict(glyph.lib)
 					oldMark = glyph.mark
@@ -860,7 +867,7 @@ class BaseFont(RBaseObject):
 				min = minFont[glyphName]
 				max = maxFont[glyphName]
 				ok, glyphErrors = selfGlyph.interpolate(factor, min, max, suppressError=suppressError, analyzeOnly=analyzeOnly)
-				if not errors.has_key('Glyph Errors'):
+				if 'Glyph Errors' not in errors:
 					errors['Glyph Errors'] = {}
 				errors['Glyph Errors'][glyphName] = glyphErrors
 			if doProgress:
@@ -1072,21 +1079,21 @@ class BaseGlyph(RBaseObject):
 		# collect compatible anchors
 		selfAnchors = {}
 		for pt, name in selfMathAnchors:
-			if not selfAnchors.has_key(name):
+			if name not in selfAnchors:
 				selfAnchors[name] = []
 			selfAnchors[name].append(pt)
 		otherAnchors = {}
 		for pt, name in otherMathAnchors:
-			if not otherAnchors.has_key(name):
+			if name not in otherAnchors:
 				otherAnchors[name] = []
 			otherAnchors[name].append(pt)
 		compatAnchors = set(selfAnchors.keys()) & set(otherAnchors.keys())
 		finalSelfAnchors = {}
 		finalOtherAnchors = {}
 		for name in compatAnchors:
-			if not finalSelfAnchors.has_key(name):
+			if name not in finalSelfAnchors:
 				finalSelfAnchors[name] = []
-			if not finalOtherAnchors.has_key(name):
+			if name not in finalOtherAnchors:
 				finalOtherAnchors[name] = []
 			selfList = selfAnchors[name]
 			otherList = otherAnchors[name]
@@ -1105,21 +1112,21 @@ class BaseGlyph(RBaseObject):
 		# collect compatible components
 		selfComponents = {}
 		for baseName, transformation in selfMathComponents:
-			if not selfComponents.has_key(baseName):
+			if baseName not in selfComponents:
 				selfComponents[baseName] = []
 			selfComponents[baseName].append(transformation)
 		otherComponents = {}
 		for baseName, transformation in otherMathComponents:
-			if not otherComponents.has_key(baseName):
+			if baseName not in otherComponents:
 				otherComponents[baseName] = []
 			otherComponents[baseName].append(transformation)
 		compatComponents = set(selfComponents.keys()) & set(otherComponents.keys())
 		finalSelfComponents = {}
 		finalOtherComponents = {}
 		for baseName in compatComponents:
-			if not finalSelfComponents.has_key(baseName):
+			if baseName not in finalSelfComponents:
 				finalSelfComponents[baseName] = []
-			if not finalOtherComponents.has_key(baseName):
+			if baseName not in finalOtherComponents:
 				finalOtherComponents[baseName] = []
 			selfList = selfComponents[baseName]
 			otherList = otherComponents[baseName]
@@ -1447,7 +1454,7 @@ class BaseGlyph(RBaseObject):
 
 	def getPointPen(self):
 		"""Return a PointPen object for creating an outline in this glyph."""
-		raise NotImplementedError, "getPointPen() must be implemented by subclass"
+		raise NotImplementedError("getPointPen() must be implemented by subclass")
 	
 	def deSelect(self):
 		"""Set all selected attrs in glyph to False: for the glyph, components, anchors, points."""
@@ -1538,12 +1545,13 @@ class BaseGlyph(RBaseObject):
 	def autoUnicodes(self):
 		"""Using fontTools.agl, assign Unicode list to the glyph"""
 		from fontTools.agl import AGL2UV
-		if AGL2UV.has_key(self.name):
+		if self.name in AGL2UV:
 			self.unicode = AGL2UV[self.name]
 			self._hasChanged()
 			
-	def pointInside(self, (x, y), evenOdd=0):
+	def pointInside(self, pt, evenOdd=0):
 		"""determine if the point is in the black or white of the glyph"""
+		(x, y) = pt
 		from fontTools.pens.pointInsidePen import PointInsidePen
 		font = self.getParent()
 		piPen = PointInsidePen(glyphSet=font, testPoint=(x, y), evenOdd=evenOdd)
@@ -1702,8 +1710,9 @@ class BaseGlyph(RBaseObject):
 			ySlice = ySlice + 1
 		return map
 
-	def move(self, (x, y), contours=True, components=True, anchors=True):
+	def move(self, pt, contours=True, components=True, anchors=True):
 		"""Move a glyph's items that are flagged as True"""
+		(x, y) = pt
 		x, y = roundPt((x, y))
 		if contours:
 			for contour in self.contours:
@@ -1715,8 +1724,9 @@ class BaseGlyph(RBaseObject):
 			for anchor in self.anchors:
 				anchor.move((x, y))
 			
-	def scale(self, (x, y), center=(0, 0)):
+	def scale(self, pt, center=(0, 0)):
 		"""scale the glyph"""
+		(x, y) = pt
 		for contour in self.contours:
 			contour.scale((x, y), center=center)
 		for component in self.components:
@@ -1782,7 +1792,7 @@ class BaseContour(RBaseObject):
 					font = fontParent.info.postscriptFullName
 				except AttributeError: pass
 		try:
-			idx = `self.index`
+			idx = repr(self.index)
 		except ValueError:
 			# XXXX
 			idx = "XXX"
@@ -1995,15 +2005,15 @@ class BaseContour(RBaseObject):
 				pen.addPoint((point.x, point.y), segmentType=None, smooth=None, name=name, selected=point.selected)
 		pen.endPath()
 		
-	def move(self, (x, y)):
+	def move(self, pt):
 		"""move the contour"""
-		#this will be faster if we go straight to the points
+		(x, y) = pt
 		for point in self.points:
 			point.move((x, y))
 	
-	def scale(self,(x, y), center=(0, 0)):
+	def scale(self, pt, center=(0, 0)):
 		"""scale the contour"""
-		#this will be faster if we go straight to the points
+		(x, y) = pt
 		for point in self.points:
 			point.scale((x, y), center=center)
 	
@@ -2035,8 +2045,9 @@ class BaseContour(RBaseObject):
 		rT = rT.skew(radAngle)
 		self.transform(rT)
 	
-	def pointInside(self, (x, y), evenOdd=0):
+	def pointInside(self, pt, evenOdd=0):
 		"""determine if the point is inside or ouside of the contour"""
+		(x, y) = pt
 		from fontTools.pens.pointInsidePen import PointInsidePen
 		glyph = self.getParent()
 		font = glyph.getParent()
@@ -2101,7 +2112,7 @@ class BaseContour(RBaseObject):
 			prevSegment = self._prevSegment(index)
 			nextSegment = self._nextSegment(index)
 			if nextSegment.type == MOVE:
-				raise RoboFabError, 'still working out curving at the end of a contour'
+				raise RoboFabError('still working out curving at the end of a contour')
 			elif nextSegment.type == QCURVE:
 				return
 			#set the new incoming bcp
@@ -2149,7 +2160,7 @@ class BaseSegment(RBaseObject):
 		contourParent = self.getParent()
 		if contourParent is not None:
 			try:
-				contourIndex = `contourParent.index`
+				contourIndex = repr(contourParent.index)
 			except AttributeError: pass
 			glyphParent = contourParent.getParent()
 			if glyphParent is not None:
@@ -2162,7 +2173,7 @@ class BaseSegment(RBaseObject):
 						font = fontParent.info.postscriptFullName
 					except AttributeError: pass
 		try:
-			idx = `self.index`
+			idx = repr(self.index)
 		except ValueError:
 			idx = "XXX"
 		return "<RSegment for %s.%s[%s][%s]>"%(font, glyph, contourIndex, idx)
@@ -2234,13 +2245,15 @@ class BaseSegment(RBaseObject):
 		for point in self.points:
 			point.round()
 	
-	def move(self, (x, y)):
+	def move(self, pt):
 		"""move the segment"""
+		(x, y) = pt
 		for point in self.points:
 			point.move((x, y))
 	
-	def scale(self, (x, y), center=(0, 0)):
+	def scale(self, pt, center=(0, 0)):
 		"""scale the segment"""
+		(x, y) = pt
 		for point in self.points:
 			point.scale((x, y), center=center)
 
@@ -2280,12 +2293,12 @@ class BasePoint(RBaseObject):
 		segmentParent = self.getParent()
 		if segmentParent is not None:
 			try:
-				segmentIndex = `segmentParent.index`
+				segmentIndex = repr(segmentParent.index)
 			except AttributeError: pass
 			contourParent = self.getParent().getParent()
 			if contourParent is not None:
 				try:
-					contourIndex = `contourParent.index`
+					contourIndex = repr(contourParent.index)
 				except AttributeError: pass
 				glyphParent = contourParent.getParent()
 				if glyphParent is not None:
@@ -2360,12 +2373,14 @@ class BasePoint(RBaseObject):
 		"""round the values in the point"""
 		self.x, self.y = roundPt((self.x, self.y))
 
-	def move(self, (x, y)):
+	def move(self, pt):
 		"""Move the point"""
+		(x, y) = pt
 		self.x, self.y = addPt((self.x, self.y), (x, y))
 		
-	def scale(self, (x, y), center=(0, 0)):
+	def scale(self, pt, center=(0, 0)):
 		"""scale the point"""
+		(x, y) = pt
 		nX, nY = _scalePointFromCenter((self.x, self.y), (x, y), center)
 		self.x = nX
 		self.y = nY
@@ -2393,12 +2408,12 @@ class BaseBPoint(RBaseObject):
 		segmentParent = self.getParent()
 		if segmentParent is not None:
 			try:
-				segmentIndex = `segmentParent.index`
+				segmentIndex = repr(segmentParent.index)
 			except AttributeError: pass
 			contourParent = segmentParent.getParent()
 			if contourParent is not None:
 				try:
-					contourIndex = `contourParent.index`
+					contourIndex = repr(contourParent.index)
 				except AttributeError: pass
 				glyphParent = contourParent.getParent()
 				if glyphParent is not None:
@@ -2410,7 +2425,7 @@ class BaseBPoint(RBaseObject):
 						try:
 							font = fontParent.info.postscriptFullName
 						except AttributeError: pass
-		return "<RBPoint for %s.%s[%s][%s][%s]>"%(font, glyph, contourIndex, segmentIndex, `self.index`)
+		return "<RBPoint for %s.%s[%s][%s][%s]>"%(font, glyph, contourIndex, segmentIndex, repr(self.index))
 
 	
 	def __add__(self, other):
@@ -2465,8 +2480,9 @@ class BaseBPoint(RBaseObject):
 		if pSeg.getParent()._nextSegment(pSeg.index).type != MOVE:
 			self.bcpOut = roundPt(self.bcpOut)
 	
-	def move(self, (x, y)):
+	def move(self, pt):
 		"""move the bPoint"""
+		(x, y) = pt
 		bcpIn = self.bcpIn
 		bcpOut = self.bcpOut
 		self.anchor = (self.anchor[0] + x, self.anchor[1] + y)
@@ -2476,8 +2492,9 @@ class BaseBPoint(RBaseObject):
 		if pSeg.getParent()._nextSegment(pSeg.index).type != MOVE:
 			self.bcpOut = bcpOut
 	
-	def scale(self, (x, y), center=(0, 0)):
+	def scale(self, pt, center=(0, 0)):
 		"""scale the bPoint"""
+		(x, y) = pt
 		centerX, centerY = center
 		ogCenter = (centerX, centerY)
 		scaledCenter = (centerX * x, centerY * y)
@@ -2646,7 +2663,7 @@ class BaseComponent(RBaseObject):
 				try:
 					font = fontParent.info.postscriptFullName
 				except AttributeError: pass
-		return "<RComponent for %s.%s.components[%s]>"%(font, glyph, `self.index`)
+		return "<RComponent for %s.%s.components[%s]>"%(font, glyph, repr(self.index))
 		
 	def _hasChanged(self):
 		"""mark the object and it's parent as changed"""
@@ -2711,7 +2728,7 @@ class BaseComponent(RBaseObject):
 		# the font does not have a glyph
 		# that matches the glyph that
 		# this component references
-		if not parentFont.has_key(self.baseGlyph):
+		if self.baseGlyph not in parentFont:
 			return None
 		return _box(self, parentFont)
 	
@@ -2762,7 +2779,7 @@ class BaseAnchor(RBaseObject):
 				try:
 					font = fontParent.info.postscriptFullName
 				except AttributeError: pass
-		return "<RAnchor for %s.%s.anchors[%s]>"%(font, glyph, `self.index`)
+		return "<RAnchor for %s.%s.anchors[%s]>"%(font, glyph, repr(self.index))
 
 	def __add__(self, other):
 		warn("Anchor math has been deprecated and is slated for removal.", DeprecationWarning)
@@ -2832,13 +2849,15 @@ class BaseAnchor(RBaseObject):
 		pen.addPoint((self.x, self.y), segmentType="move", smooth=False, name=self.name)
 		pen.endPath()
 		
-	def move(self, (x, y)):
+	def move(self, pt):
 		"""Move the anchor"""
+		(x, y) = pt
 		pX, pY = self.position
 		self.position = (pX+x, pY+y)
 		
-	def scale(self, (x, y), center=(0, 0)):
+	def scale(self, pt, center=(0, 0)):
 		"""scale the anchor"""
+		(x, y) = pt
 		pos = self.position
 		self.position = _scalePointFromCenter(pos, (x, y), center)
 
@@ -2994,9 +3013,9 @@ class BaseGroups(dict):
 	def __setitem__(self, key, value):
 		#override base class to insure proper data is being stored
 		if not isinstance(key, str):
-			raise RoboFabError, 'key must be a string'
+			raise RoboFabError('key must be a string')
 		if not isinstance(value, list):
-			raise RoboFabError, 'group must be a list'
+			raise RoboFabError('group must be a list')
 		super(BaseGroups, self).__setitem__(key, value)
 		
 	def findGlyph(self, glyphName):
@@ -3077,24 +3096,24 @@ class BaseKerning(RBaseObject):
 			pair = key
 			return self.get(pair)
 		elif isinstance(key, str):
-			raise RoboFabError, 'kerning pair must be a tuple: (left, right)'
+			raise RoboFabError('kerning pair must be a tuple: (left, right)')
 		else:
 			keys = self.keys()
 			if key > len(keys):
 				raise IndexError
 			keys.sort()
 			pair = keys[key]
-		if not self._kerning.has_key(pair):
+		if pair not in self._kerning:
 			raise IndexError
 		else:
 			return pair
 	
 	def __setitem__(self, pair, value):
 		if not isinstance(pair, tuple):
-			raise RoboFabError, 'kerning pair must be a tuple: (left, right)'
+			raise RoboFabError('kerning pair must be a tuple: (left, right)')
 		else:
 			if len(pair) != 2:
-				raise RoboFabError, 'kerning pair must be a tuple: (left, right)'
+				raise RoboFabError('kerning pair must be a tuple: (left, right)')
 			else:
 				if value == 0:
 					if self._kerning.get(pair) is not None:
@@ -3125,7 +3144,7 @@ class BaseKerning(RBaseObject):
 		return self._kerning.items()
 	
 	def has_key(self, pair):
-		return self._kerning.has_key(pair)
+		return pair in self._kerning
 	
 	def get(self, pair, default=None):
 		"""get a value. return None if the pair does not exist"""
@@ -3272,7 +3291,7 @@ class BaseKerning(RBaseObject):
 			kerningDicts = [kerningDicts]
 		for kd in kerningDicts:
 			for pair in kd.keys():
-				exists = self.has_key(pair)
+				exists = pair in self
 				if exists and overwriteExisting:
 					self[pair] = kd[pair]
 				elif not exists:
@@ -3284,10 +3303,10 @@ class BaseKerning(RBaseObject):
 		for pair in self.keys():
 			foundInstance = False
 			left, right = pair
-			if swapTable.has_key(left):
+			if left in swapTable:
 				left = swapTable[left]
 				foundInstance = True
-			if swapTable.has_key(right):
+			if right in swapTable:
 				right = swapTable[right]
 				foundInstance = True
 			if foundInstance:
