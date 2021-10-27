@@ -55,7 +55,7 @@ class _baseWindowController(object):
         
         self.w.closeButton = vanilla.Button((-150, -30, -80, 20), "Cancel", callback=self.closeCallback, sizeStyle="small")
         self.w.closeButton.bind(".", ["command"])
-        self.w.closeButton.bind(unichr(27), [])
+        self.w.closeButton.bind("\x1B", [])
         
         self.cancelled = False
     
