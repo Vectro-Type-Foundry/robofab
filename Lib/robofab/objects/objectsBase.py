@@ -996,11 +996,11 @@ class BaseGlyph(RBaseObject):
 		otherContours = otherData['contours']
 		newContours = newData['contours']
 		if len(selfContours) > 0:
-			for contourIndex in xrange(len(selfContours)):
+			for contourIndex in range(len(selfContours)):
 				newContours.append([])
 				selfContour = selfContours[contourIndex]
 				otherContour = otherContours[contourIndex]
-				for pointIndex in xrange(len(selfContour)):
+				for pointIndex in range(len(selfContour)):
 					segType, pt, smooth, name = selfContour[pointIndex]
 					newX, newY = funct(selfContour[pointIndex][1], otherContour[pointIndex][1])
 					newContours[-1].append((segType, (newX, newY), smooth, name))
@@ -1245,7 +1245,7 @@ class BaseGlyph(RBaseObject):
 			fatalError = True
 			errors.append("Fatal error: glyph %s and glyph %s don't have the same number of contours." %(selfName, otherName))
 		else:
-			for contourIndex in xrange(len(selfContours)):
+			for contourIndex in range(len(selfContours)):
 				selfContour = selfContours[contourIndex]
 				otherContour = otherContours[contourIndex]
 				if len(selfContour) != len(otherContour):
@@ -1258,7 +1258,7 @@ class BaseGlyph(RBaseObject):
 		otherComponents = otherData['components']
 		if len(selfComponents) != len(otherComponents):
 			errors.append("Error: glyph %s and glyph %s don't have the same number of components." %(selfName, otherName))
-		for componentIndex in xrange(min(len(selfComponents), len(otherComponents))):
+		for componentIndex in range(min(len(selfComponents), len(otherComponents))):
 			selfBaseName, selfTransformation = selfComponents[componentIndex]
 			otherBaseName, otherTransformation = otherComponents[componentIndex]
 			if selfBaseName != otherBaseName:
@@ -1270,7 +1270,7 @@ class BaseGlyph(RBaseObject):
 		otherAnchors = otherData['anchors']
 		if len(selfAnchors) != len(otherAnchors):
 			errors.append("Error: glyph %s and glyph %s don't have the same number of anchors." %(selfName, otherName))
-		for anchorIndex in xrange(min(len(selfAnchors), len(otherAnchors))):
+		for anchorIndex in range(min(len(selfAnchors), len(otherAnchors))):
 			selfPt, selfAnchorName = selfAnchors[anchorIndex]
 			otherPt, otherAnchorName = otherAnchors[anchorIndex]
 			if selfAnchorName != otherAnchorName:
@@ -1279,11 +1279,11 @@ class BaseGlyph(RBaseObject):
 	
 	def _interpolateContours(self, factor, minContours, maxContours):
 		newContours = []
-		for contourIndex in xrange(len(minContours)):
+		for contourIndex in range(len(minContours)):
 			minContour = minContours[contourIndex]
 			maxContour = maxContours[contourIndex]
 			newContours.append([])
-			for pointIndex in xrange(len(minContour)):
+			for pointIndex in range(len(minContour)):
 				segType, pt, smooth, name = minContour[pointIndex]
 				minPoint = minContour[pointIndex][1]
 				maxPoint = maxContour[pointIndex][1]
@@ -1298,7 +1298,7 @@ class BaseGlyph(RBaseObject):
 		for componentName in componentNames:
 			minComponentList = minComponents[componentName]
 			maxComponentList = maxComponents[componentName]
-			for i in xrange(len(minComponentList)):
+			for i in range(len(minComponentList)):
 				# transformation breakdown: xScale, xyScale, yxScale, yScale, xOffset, yOffset
 				minXScale, minXYScale, minYXScale, minYScale, minXOffset, minYOffset = minComponentList[i]
 				maxXScale, maxXYScale, maxYXScale, maxYScale, maxXOffset, maxYOffset = maxComponentList[i]

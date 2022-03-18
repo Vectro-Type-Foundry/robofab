@@ -209,13 +209,13 @@ def _glyphHintsToDict(glyph):
 	# glyph.hhints and glyph.vhints returns a list of Hint objects.
 	# Hint objects have position and width attributes.
 	data['hHints'] = []
-	for index in xrange(len(glyph.hhints)):
+	for index in range(len(glyph.hhints)):
 		hint = glyph.hhints[index]
 		data['hHints'].append((hint.position, hint.width))
 	if not data['hHints']:
 		del data['hHints']
 	data['vHints'] = []
-	for index in xrange(len(glyph.vhints)):
+	for index in range(len(glyph.vhints)):
 		hint = glyph.vhints[index]
 		data['vHints'].append((hint.position, hint.width))
 	if not data['vHints']:
@@ -226,7 +226,7 @@ def _glyphHintsToDict(glyph):
 	# glyph.hlinks and glyph.vlinks returns a list of Link objects.
 	# Link objects have node1 and node2 attributes.
 	data['hLinks'] = []
-	for index in xrange(len(glyph.hlinks)):
+	for index in range(len(glyph.hlinks)):
 		link = glyph.hlinks[index]
 		d = {	'node1' : link.node1,
 			'node2' : link.node2,
@@ -235,7 +235,7 @@ def _glyphHintsToDict(glyph):
 	if not data['hLinks']:
 		del data['hLinks']
 	data['vLinks'] = []
-	for index in xrange(len(glyph.vlinks)):
+	for index in range(len(glyph.vlinks)):
 		link = glyph.vlinks[index]
 		d = {	'node1' : link.node1,
 			'node2' : link.node2,
@@ -249,7 +249,7 @@ def _glyphHintsToDict(glyph):
 	# glyph.replace_table returns a list of Replace objects.
 	# Replace objects have type and index attributes.
 	data['replaceTable'] = []
-	for index in xrange(len(glyph.replace_table)):
+	for index in range(len(glyph.replace_table)):
 		replace = glyph.replace_table[index]
 		d = {	'type' : replace.type,
 			'index' : replace.index,
@@ -389,7 +389,7 @@ def AllFonts():
 	"""Return a list of all open fonts."""
 	fontCount = len(fl)
 	all = []
-	for index in xrange(fontCount):
+	for index in range(fontCount):
 		naked = fl[index]
 		all.append(RFont(naked))
 	return all
@@ -585,7 +585,7 @@ class RFont(BaseFont):
 		# font with no file_name.
 		selfFileName = self._object.file_name
 		fontCount = len(fl)
-		for index in xrange(fontCount):
+		for index in range(fontCount):
 			other = fl[index]
 			if other.file_name == selfFileName:
 				return index
